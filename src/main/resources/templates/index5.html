@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form id="searchForm" th:action="@{/search}" method="GET">
+        <label for="searching">Zadajte hľadaný výraz:</label>
+        <input type="text" id="searching" name="q" required>
+        <br>
+        <button type="submit">Hľadať</button>
+        <a id="downloadResultsLink" href="#" download="search_results.txt">Uložiť výsledky</a>
+    </form>
+    <table>
+        <thead>
+        <tr>
+            <td>Results</td>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="result : ${results}" th:object="${results}">
+            <td th:text="${results.get(0)}"></td>
+        </tr>
+        </tbody>
+    </table>
+
+    <div id="searchResults"></div>
+
+<script>
+    document.getElementById('searchForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the form from submitting normally
+
+        var formData = new FormData(this); // Get form data
+
+        fetch('http://localhost:8080/search?' + new URLSearchParams(formData), {
+            method: 'GET'
+        })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                }
+                throw new Error('Network response was not ok.');
+            })
+            .then(data => {
+                console.log(data); // Log the response to the console
+                // You can do something with the response here, such as displaying it on the page
+                var parser = new DOMParser();
+                var doc = parser.parseFromString(data, 'text/html');
+
+                // Extract search results
+                var searchResults = doc.querySelectorAll('div.g');
+
+                // Display search results
+                var searchResultsDiv = document.getElementById('searchResults');
+                searchResultsDiv.innerHTML = ''; // Clear previous results
+                searchResults.forEach(function(result) {
+                    var title = result.querySelector('h3');
+                    var link = result.querySelector('a[href]');
+                    if (title && link) {
+                        var resultDiv = document.createElement('div');
+                        // var resultText = title.innerText + ' - ' + link.href;
+                        // resultDiv.innerText = resultText;
+                        resultDiv.innerHTML = '<a href="' + link.href + '">' + title.textContent + '</a>';
+                        searchResultsDiv.appendChild(resultDiv);
+                    }
+                });
+                // Download search results
+                var downloadLink = document.getElementById('downloadResultsLink');
+                var dataURI = 'data:text/plain;charset=utf-8,' + encodeURIComponent(data);
+                downloadLink.href = dataURI;
+            })
+            .catch(error => {
+                console.error('Request failed:', error);
+            });
+    });
+</script>
+</body>
+</html>

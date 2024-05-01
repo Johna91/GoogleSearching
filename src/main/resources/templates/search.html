@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<form id="searchForm" action="/search" method="GET">
+  <label for="searching">Zadajte hľadaný výraz:</label>
+  <input type="text" id="searching" name="q" required>
+  <br>
+  <button type="submit">Hľadať</button>
+</form>
+<table>
+    <thead>
+    <tr>
+        <td>Results</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="result : ${results}" th:object="${result}">
+        <td th:text="${results.get(0)}"></td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
